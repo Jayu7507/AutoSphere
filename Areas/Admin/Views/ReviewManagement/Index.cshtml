@@ -1,0 +1,75 @@
+@model IEnumerable<AutoSphere.Models.Review>
+@{
+    ViewData["Title"] = "Review Moderation";
+}
+
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold m-0"><i class="fas fa-star text-warning me-2"></i> Post-Service Feedback</h4>
+        <span class="badge bg-dark border border-secondary text-muted">@Model.Count(r => !r.IsApproved) Pending Approval</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle border-secondary">
+            <thead>
+                <tr>
+                    <th class="border-secondary text-muted small">Customer</th>
+                    <th class="border-secondary text-muted small">Rating</th>
+                    <th class="border-secondary text-muted small">Comment</th>
+                    <th class="border-secondary text-muted small">Status</th>
+                    <th class="border-secondary text-muted small text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var review in Model)
+                {
+                    <tr>
+                        <td class="border-secondary py-3">
+                            <div class="fw-bold">@review.User?.FullName</div>
+                            <div class="x-small text-muted">Ref: @review.Booking?.BookingReference</div>
+                        </td>
+                        <td class="border-secondary">
+                            <div class="text-warning small">
+                                @for(int i=1; i<=5; i++)
+                                {
+                                    <i class="fas fa-star @(i <= review.Rating ? "" : "text-dark")"></i>
+                                }
+                            </div>
+                        </td>
+                        <td class="border-secondary">
+                            <div class="small text-light italic">"@review.Comment"</div>
+                            <div class="x-small text-muted mt-1">@review.CreatedAt.ToString("dd MMM yyyy")</div>
+                        </td>
+                        <td class="border-secondary">
+                            @if(review.IsApproved)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25">Pending</span>
+                            }
+                        </td>
+                        <td class="border-secondary text-end">
+                            @if(!review.IsApproved)
+                            {
+                                <form asp-action="Approve" asp-route-id="@review.Id" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-outline-success btn-sm me-2">Approve</button>
+                                </form>
+                            }
+                            <form asp-action="Delete" asp-route-id="@review.Id" method="post" style="display:inline;" onsubmit="return confirm('Reject/Delete this review?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if(!Model.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted small italic">No reviews found.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

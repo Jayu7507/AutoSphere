@@ -1,0 +1,93 @@
+@model IEnumerable<AutoSphere.Models.StaffAssignment>
+@{
+    ViewData["Title"] = "Service Hub";
+    Layout = "_StaffLayout";
+}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1">Service Hub</h2>
+                <p class="text-muted">Manage all your active and upcoming vehicle service assignments from here.</p>
+            </div>
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-light btn-sm px-3 rounded-pill">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-12">
+        <div class="glass-card p-4">
+            <h4 class="fw-bold mb-4 d-flex align-items-center">
+                <i class="fas fa-calendar-check me-3 text-primary"></i> Active Assignments
+            </h4>
+
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle">
+                    <thead>
+                        <tr class="text-muted text-uppercase small" style="border-bottom: 2px solid rgba(255,255,255,0.05);">
+                            <th class="py-3">Job Ref</th>
+                            <th class="py-3">Customer</th>
+                            <th class="py-3">Vehicle</th>
+                            <th class="py-3">Current Status</th>
+                            <th class="py-3">Scheduled Date</th>
+                            <th class="py-3 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var sa in Model)
+                            {
+                                var booking = sa.Booking;
+                                if (booking == null) continue;
+
+                                var statusClass = booking.Status switch
+                                {
+                                    "Confirmed" => "text-primary",
+                                    "In Progress" => "text-info",
+                                    "WaitingForParts" => "text-warning",
+                                    "Completed" => "text-success",
+                                    _ => "text-muted"
+                                };
+
+                                <tr>
+                                    <td class="py-4 fw-bold">#@booking.BookingReference</td>
+                                    <td class="py-4">
+                                        <div class="text-light">@booking.User?.FullName</div>
+                                        <div class="x-small text-muted">@booking.User?.Phone</div>
+                                    </td>
+                                    <td class="py-4">
+                                        <div class="text-light">@booking.Vehicle?.Brand @booking.Vehicle?.ModelName</div>
+                                        <div class="x-small text-muted">@booking.Vehicle?.LicensePlate</div>
+                                    </td>
+                                    <td class="py-4">
+                                        <span class="fw-bold @statusClass"><i class="fas fa-circle x-small me-1"></i> @booking.Status</span>
+                                    </td>
+                                    <td class="py-4 small">@booking.ScheduledDate.ToString("dd MMM yyyy")</td>
+                                    <td class="py-4 text-end">
+                                        <a asp-action="Detail" asp-route-id="@sa.Id" class="btn btn-primary-custom px-4">
+                                            Manage Job <i class="fas fa-arrow-right ms-1"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="fas fa-clipboard-list fs-2 d-block mb-3 opacity-25"></i>
+                                    No assignments found in the hub.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,99 @@
+@model AutoSphere.Models.Staff
+@{
+    ViewData["Title"] = "Staff Dashboard";
+    Layout = "_StaffLayout";
+}
+
+<div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold mb-1">Welcome, @Model.Name</h2>
+            <p class="text-muted"><i class="fas fa-tools me-2 text-primary"></i> Specialization: <span class="text-light fw-bold">@Model.Specialization</span></p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="glass-card d-inline-block px-4 py-2">
+                <span class="text-muted small d-block">Overall Rating</span>
+                <span class="text-warning fw-bold fs-4"><i class="fas fa-star me-1"></i> @Model.Rating.ToString("0.0")</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Assigned Work -->
+        <div class="col-md-12">
+            <div class="glass-card p-4">
+                <h4 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="fas fa-tasks me-2 text-primary"></i> My Assignments
+                </h4>
+
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover mb-0 align-middle">
+                        <thead>
+                            <tr class="text-muted text-uppercase small" style="border-bottom: 2px solid rgba(255,255,255,0.05);">
+                                <th class="py-3">Ref / Client</th>
+                                <th class="py-3">Vehicle</th>
+                                <th class="py-3">Services</th>
+                                <th class="py-3">Date</th>
+                                <th class="py-3">Status</th>
+                                <th class="py-3 text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Assignments != null && Model.Assignments.Any())
+                            {
+                                foreach (var sa in Model.Assignments.OrderByDescending(a => a.AssignedAt))
+                                {
+                                    var booking = sa.Booking;
+                                    if (booking == null) continue;
+
+                                    var statusClass = booking.Status switch
+                                    {
+                                        "Confirmed" => "text-primary",
+                                        "In Progress" => "text-info",
+                                        "WaitingForParts" => "text-warning",
+                                        "Completed" => "text-success",
+                                        _ => "text-muted"
+                                    };
+
+                                    <tr>
+                                        <td class="py-4">
+                                            <div class="fw-bold text-light">#@booking.BookingReference</div>
+                                            <small class="text-muted">@booking.User?.FullName</small>
+                                        </td>
+                                        <td class="py-4">
+                                            <span class="text-light">@booking.Vehicle?.Brand @booking.Vehicle?.ModelName</span><br />
+                                            <small class="text-muted">@booking.Vehicle?.LicensePlate</small>
+                                        </td>
+                                        <td class="py-4">
+                                            @foreach (var detail in booking.BookingDetails ?? Enumerable.Empty<AutoSphere.Models.BookingDetail>())
+                                            {
+                                                <div class="badge bg-secondary me-1 mb-1" style="font-size: 0.7rem;">@detail.Service?.Name</div>
+                                            }
+                                        </td>
+                                        <td class="py-4 small text-muted">@booking.ScheduledDate.ToString("dd MMM yyyy")</td>
+                                        <td class="py-4">
+                                            <span class="fw-bold @statusClass"><i class="fas fa-circle x-small me-1"></i> @booking.Status</span>
+                                        </td>
+                                        <td class="py-4 text-end">
+                                            <a asp-area="Staff" asp-controller="BookingProcessing" asp-action="Detail" asp-route-id="@sa.Id" class="btn btn-sm btn-primary-custom px-3">
+                                                Manage <i class="fas fa-chevron-right ms-1"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="fas fa-coffee fs-2 d-block mb-3"></i>
+                                        No active assignments found. Relax or check with admin.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

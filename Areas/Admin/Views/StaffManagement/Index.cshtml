@@ -1,0 +1,73 @@
+@model IEnumerable<AutoSphere.Models.Staff>
+@{
+    ViewData["Title"] = "Staff Management";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold m-0"><i class="fas fa-users-cog me-2 text-primary"></i> Staff Management</h3>
+    <a asp-action="Create" class="btn btn-warning btn-sm"><i class="fas fa-plus me-1 text-dark"></i> Add New Staff</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success bg-dark border-success text-success">
+        <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+    </div>
+}
+
+<div class="glass-card table-responsive p-0 overflow-hidden">
+    <table class="table table-dark table-hover mb-0 align-middle">
+        <thead>
+            <tr class="text-muted text-uppercase" style="background-color: rgba(0,0,0,0.2); font-size: 0.8rem;">
+                <th class="py-3 px-4">Name</th>
+                <th class="py-3 px-4">Specialization</th>
+                <th class="py-3 px-4">Phone</th>
+                <th class="py-3 px-4">Rating</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(Model != null && Model.Any())
+            {
+                foreach(var staff in Model)
+                {
+                    <tr>
+                        <td class="py-3 px-4 fw-bold text-light">@staff.Name</td>
+                        <td class="py-3 px-4">@staff.Specialization</td>
+                        <td class="py-3 px-4 text-muted">@staff.Phone</td>
+                        <td class="py-3 px-4">
+                            <span class="text-warning"><i class="fas fa-star me-1"></i> @staff.Rating.ToString("0.0")</span>
+                        </td>
+                        <td class="py-3 px-4">
+                            @if(staff.IsAvailable)
+                            {
+                                <span class="badge bg-success">Available</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Busy / Unavailable</span>
+                            }
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="d-flex justify-content-center gap-2">
+                                <a asp-action="Edit" asp-route-id="@staff.Id" class="btn btn-sm btn-outline-info" title="Edit"><i class="fas fa-edit"></i></a>
+                                <form asp-action="Delete" method="post" onsubmit="return confirm('Remove this staff member?');">
+                                    <input type="hidden" name="id" value="@staff.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">No staff members registered.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

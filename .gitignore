@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.db
+*.db-shm
+*.db-wal
+TestResults/
+build_log.txt
+appsettings.Development.json
+appsettings.json
+autospheredb.sql

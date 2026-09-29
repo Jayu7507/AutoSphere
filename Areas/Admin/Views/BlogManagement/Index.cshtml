@@ -1,0 +1,64 @@
+@model IEnumerable<AutoSphere.Models.BlogPost>
+@{
+    ViewData["Title"] = "Manage Magazine Articles";
+    Layout = "_AdminLayout";
+}
+
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold m-0"><i class="fas fa-newspaper me-2 text-primary"></i> Magazine Intelligence</h4>
+        <a asp-action="Create" class="btn btn-primary-custom px-4 rounded-pill"><i class="fas fa-plus me-2"></i> NEW ARTICLE</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle">
+            <thead>
+                <tr class="text-muted small">
+                    <th class="py-3">ARTICLE</th>
+                    <th class="py-3">CATEGORY</th>
+                    <th class="py-3">AUTHOR</th>
+                    <th class="py-3">DATE</th>
+                    <th class="py-3">STATUS</th>
+                    <th class="py-3 text-end">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var post in Model)
+                {
+                    <tr>
+                        <td class="py-4">
+                            <div class="d-flex align-items-center">
+                                <img src="@post.ImageUrl" class="rounded me-3" width="50" height="40" style="object-fit: cover;">
+                                <div>
+                                    <div class="fw-bold text-white">@post.Title</div>
+                                    <div class="x-small text-muted">@post.Slug</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-4"><span class="badge bg-secondary">@post.Category</span></td>
+                        <td class="py-4 small text-light">@post.AuthorName</td>
+                        <td class="py-4 small text-muted">@post.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td class="py-4">
+                            @if (post.IsPublished)
+                            {
+                                <span class="text-success small fw-bold"><i class="fas fa-check-circle me-1"></i> Published</span>
+                            }
+                            else
+                            {
+                                <span class="text-warning small fw-bold"><i class="fas fa-clock me-1"></i> Draft</span>
+                            }
+                        </td>
+                        <td class="py-4 text-end">
+                            <div class="btn-group">
+                                <a asp-action="Edit" asp-route-id="@post.Id" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                                <form asp-action="Delete" asp-route-id="@post.Id" method="post" onsubmit="return confirm('Delete this article forever?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger ms-1"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

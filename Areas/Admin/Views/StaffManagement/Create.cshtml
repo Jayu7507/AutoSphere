@@ -1,0 +1,86 @@
+@model AutoSphere.Models.Staff
+@{
+    ViewData["Title"] = "Add Staff";
+    Layout = "_AdminLayout";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h4 class="fw-bold mb-4 text-primary"><i class="fas fa-user-plus me-2"></i> Register New Staff</h4>
+            
+            <form asp-action="Create" method="post">
+                <div class="mb-3">
+                    <label class="form-label text-muted small text-uppercase fw-bold">Full Name</label>
+                    <input asp-for="Name" class="form-control bg-dark text-white border-secondary" placeholder="Enter full name" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small text-uppercase fw-bold">Login Email</label>
+                    <input type="email" name="email" class="form-control bg-dark text-white border-secondary" placeholder="staff@autosphere.com" required />
+                    <span class="text-muted x-small">Used for staff login.</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small text-uppercase fw-bold">Default Password</label>
+                    <div class="input-group">
+                        <input type="password" name="password" class="form-control bg-dark text-white border-secondary" required />
+                        <button class="btn btn-outline-secondary border-secondary password-toggle" type="button">
+                            <i class="fas fa-eye text-muted"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small text-uppercase fw-bold">Specialization</label>
+                    <select asp-for="Specialization" class="form-select bg-dark text-white border-secondary">
+                        <option value="General Mechanic">General Mechanic</option>
+                        <option value="Electrician">Electrician</option>
+                        <option value="Painter">Painter / Denting</option>
+                        <option value="Engine Expert">Engine Expert</option>
+                        <option value="AC Specialist">AC Specialist</option>
+                        <option value="Cleaning / Valeting">Cleaning / Valeting</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted small text-uppercase fw-bold">Phone Number</label>
+                    <input asp-for="Phone" class="form-control bg-dark text-white border-secondary" required />
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" asp-for="IsAvailable" checked>
+                        <label class="form-check-label text-light">Immediately Available for Work</label>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning flex-grow-1 text-dark fw-bold">Create Staff Member</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.password-toggle').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                const icon = this.querySelector('i');
+                
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        });
+    </script>
+}

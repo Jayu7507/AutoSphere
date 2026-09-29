@@ -1,0 +1,51 @@
+@model AutoSphere.Models.Part
+@{
+    ViewData["Title"] = "Add New Part";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h4 class="fw-bold mb-4">Register Inventory Item</h4>
+            
+            <form asp-action="Create" method="post">
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Part Name</label>
+                    <input asp-for="Name" class="form-control bg-dark text-white border-secondary" placeholder="e.g. Brake Pads, Mobil 1 Oil" required />
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">SKU / Model Number</label>
+                        <input asp-for="SKU" class="form-control bg-dark text-white border-secondary" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Price (₹)</label>
+                        <input asp-for="Price" type="number" step="0.01" class="form-control bg-dark text-white border-secondary" required />
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Initial Stock</label>
+                        <input asp-for="StockQuantity" type="number" class="form-control bg-dark text-white border-secondary" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-bold">Low Stock Threshold</label>
+                        <input asp-for="ThresholdLevel" type="number" class="form-control bg-dark text-white border-secondary" required />
+                    </div>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input asp-for="IsActive" class="form-check-input" checked />
+                    <label class="form-check-label text-light small">Part is Active (Available for staff)</label>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-warning flex-grow-1 text-dark fw-bold">Save Part</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

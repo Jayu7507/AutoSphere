@@ -1,0 +1,229 @@
+@model AutoSphere.Models.ViewModels.WalkInBookingViewModel
+@{
+    ViewData["Title"] = "New Walk-in Booking";
+    Layout = User.IsInRole("Admin") ? "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml" : "_StaffLayout";
+}
+
+<style>
+    .service-card {
+        cursor: pointer;
+        transition: 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .service-card:hover {
+        background: rgba(15, 82, 186, 0.1);
+        border-color: var(--primary);
+    }
+    .service-card.selected {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    .service-card.selected .text-muted {
+        color: rgba(255,255,255,0.7) !important;
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bold mb-4">Complete Registration</h2>
+    </div>
+</div>
+
+<form asp-action="Create" method="post">
+    <div class="row g-4">
+        <!-- Customer Details -->
+        <div class="col-md-4">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="fas fa-user-circle me-3 text-primary"></i> Customer Info
+                </h5>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Full Name</label>
+                    <input asp-for="FullName" class="form-control bg-dark text-white border-secondary" placeholder="John Doe" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Phone Number</label>
+                    <input asp-for="Phone" class="form-control bg-dark text-white border-secondary" readonly />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label text-muted small fw-bold">Email (Optional)</label>
+                    <input asp-for="Email" class="form-control bg-dark text-white border-secondary" placeholder="customer@email.com" />
+                    <small class="text-muted x-small">If left blank, a placeholder will be generated.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicle Details -->
+        <div class="col-md-8">
+            <div class="glass-card p-4 h-100">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                    <i class="fas fa-car me-3 text-primary"></i> Vehicle Registration
+                </h5>
+                
+                @if (Model.ExistingVehicles != null && Model.ExistingVehicles.Any())
+                {
+                    <div class="mb-4">
+                        <label class="form-label text-muted small fw-bold">Existing Vehicles</label>
+                        <div class="row g-2">
+                            @foreach (var v in Model.ExistingVehicles)
+                            {
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-dark border border-secondary rounded d-flex align-items-center gap-3 cursor-pointer" onclick="selectVehicle(@v.Id, '@v.Brand', '@v.ModelName', '@v.LicensePlate', '@v.Type')">
+                                        <div class="bg-primary bg-opacity-10 p-2 rounded">
+                                            <i class="fas @(v.Type == "Bike" ? "fa-motorcycle" : "fa-car") text-primary"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-bold small">@v.Brand @v.ModelName</div>
+                                            <div class="x-small text-muted">@v.LicensePlate</div>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="vehicleSelection" value="@v.Id" id="v-@v.Id" onchange="selectVehicle(@v.Id, '@v.Brand', '@v.ModelName', '@v.LicensePlate', '@v.Type')">
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <div class="col-md-6">
+                                <div class="p-3 bg-dark border border-dashed border-secondary rounded d-flex align-items-center justify-content-center h-100 cursor-pointer" onclick="newVehicle()">
+                                    <span class="small text-muted"><i class="fas fa-plus me-1"></i> Add New Vehicle</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" asp-for="SelectedVehicleId" id="SelectedVehicleId" />
+                }
+
+                <div id="new-vehicle-form" class="@(Model.ExistingVehicles != null && Model.ExistingVehicles.Any() ? "d-none" : "")">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-bold">Type</label>
+                            <select asp-for="VehicleType" class="form-select bg-dark text-white border-secondary" id="vType">
+                                <option value="Car">Car</option>
+                                <option value="Bike">Bike</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-bold">Brand</label>
+                            <input asp-for="Brand" class="form-control bg-dark text-white border-secondary" id="vBrand" placeholder="e.g. Honda" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-bold">Model</label>
+                            <input asp-for="ModelName" class="form-control bg-dark text-white border-secondary" id="vModel" placeholder="e.g. Civic" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted small fw-bold">License Plate</label>
+                            <input asp-for="LicensePlate" class="form-control bg-dark text-white border-secondary" id="vPlate" placeholder="MH01AB1234" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Selection -->
+        <div class="col-md-12">
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold m-0 d-flex align-items-center">
+                        <i class="fas fa-tools me-3 text-primary"></i> Select Services
+                    </h5>
+                    <div class="text-end">
+                        <span class="text-muted small">Estimated Total:</span>
+                        <h4 class="fw-bold m-0" style="color: var(--secondary);">₹<span id="total-price">0.00</span></h4>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    @if (Model.AvailableServices != null)
+                    {
+                        @foreach (var s in Model.AvailableServices)
+                        {
+                            <div class="col-md-4 col-lg-3">
+                                <div class="p-3 glass-card service-card h-100" onclick="toggleService(this, @s.Id, @s.Price)">
+                                    <input type="checkbox" name="SelectedServiceIds" value="@s.Id" class="d-none service-checkbox" />
+                                    <h6 class="fw-bold mb-1">@s.Name</h6>
+                                    <div class="small text-muted mb-2 text-truncate-2">@s.Description</div>
+                                    <div class="fw-bold text-primary">₹@s.Price</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary & Actions -->
+        <div class="col-md-12">
+            <div class="glass-card p-4 d-flex justify-content-between align-items-center">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" asp-for="AutoAssignToMe" id="autoAssign" checked>
+                    <label class="form-check-label fw-bold small text-muted" for="autoAssign">Auto-assign this job to me</label>
+                </div>
+                
+                <div class="d-flex gap-3">
+                    <a asp-area="@(User.IsInRole("Admin") ? "Admin" : "Staff")" asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary px-5 rounded-pill">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-5 py-3 rounded-pill fw-bold fs-5 shadow-lg">
+                        FINALIZE BOOKING <i class="fas fa-check-circle ms-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        let totalPrice = 0;
+
+        function toggleService(card, id, price) {
+            const checkbox = card.querySelector('.service-checkbox');
+            checkbox.checked = !checkbox.checked;
+            
+            if (checkbox.checked) {
+                card.classList.add('selected');
+                totalPrice += price;
+            } else {
+                card.classList.remove('selected');
+                totalPrice -= price;
+            }
+            
+            document.getElementById('total-price').innerText = totalPrice.toFixed(2);
+        }
+
+        function selectVehicle(id, brand, model, plate, type) {
+            document.getElementById('SelectedVehicleId').value = id;
+            document.getElementById('new-vehicle-form').classList.add('d-none');
+            
+            // Clear required validations for new vehicle fields
+            document.getElementById('vBrand').value = brand;
+            document.getElementById('vModel').value = model;
+            document.getElementById('vPlate').value = plate;
+            document.getElementById('vType').value = type;
+            
+            // Mark the radio as checked
+            document.getElementById('v-' + id).checked = true;
+        }
+
+        function newVehicle() {
+            document.getElementById('SelectedVehicleId').value = "";
+            document.getElementById('new-vehicle-form').classList.remove('d-none');
+            
+            // Reset fields
+            document.getElementById('vBrand').value = "";
+            document.getElementById('vModel').value = "";
+            document.getElementById('vPlate').value = "";
+            document.getElementById('vType').value = "Car";
+            
+            // Uncheck all radios
+            document.querySelectorAll('input[name="vehicleSelection"]').forEach(r => r.checked = false);
+        }
+
+        // Initialize state if validation fails
+        window.onload = function() {
+            document.querySelectorAll('.service-checkbox:checked').forEach(cb => {
+                cb.closest('.service-card').classList.add('selected');
+                // We'd need the price here to update total, but usually it's handled on client side interactions
+            });
+        };
+    </script>
+}

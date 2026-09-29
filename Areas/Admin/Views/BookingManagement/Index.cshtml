@@ -1,0 +1,192 @@
+@model IEnumerable<AutoSphere.Models.Booking>
+@{
+    ViewData["Title"] = "All Bookings";
+    Layout = "_AdminLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold m-0"><i class="fas fa-calendar-check me-2 text-primary"></i> Booking Management</h3>
+    <a asp-action="ExportReport" class="btn btn-outline-light"><i class="fas fa-file-excel me-1 text-success"></i> Export Report</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success bg-dark border-success text-success">
+        <i class="fas fa-check-circle me-2"></i> @TempData["Success"]
+    </div>
+}
+
+<div class="glass-card table-responsive p-0 overflow-hidden">
+    <table class="table table-dark table-hover mb-0 align-middle">
+        <thead>
+            <tr class="text-muted text-uppercase" style="background-color: rgba(0,0,0,0.2); font-size: 0.8rem;">
+                <th class="py-3 px-4">Ref #</th>
+                <th class="py-3 px-4">Customer</th>
+                <th class="py-3 px-4">Vehicle</th>
+                <th class="py-3 px-4">Schedule Date</th>
+                <th class="py-3 px-4">Amount</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">Parts Used</th>
+                <th class="py-3 px-4">Assign Staff</th>
+                <th class="py-3 px-4 text-center">Update</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(Model != null && Model.Any())
+            {
+                foreach(var booking in Model)
+                {
+                    var statusBadge = "bg-secondary";
+                    if(booking.Status == "Pending") statusBadge = "bg-warning text-dark";
+                    if(booking.Status == "In Progress") statusBadge = "bg-info text-dark";
+                    if(booking.Status == "Completed") statusBadge = "bg-success";
+                    
+                    <tr>
+                        <td class="py-3 px-4 fw-bold">@booking.BookingReference</td>
+                        <td class="py-3 px-4">
+                            <div class="fw-bold text-light">@booking.User?.FullName</div>
+                            <small class="text-muted">@booking.User?.Phone</small>
+                            @if (booking.IsDoorstepService)
+                            {
+                                <div class="mt-1">
+                                    <span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25" style="font-size: 0.65rem;">
+                                        <i class="fas fa-home me-1"></i> DOORSTEP
+                                    </span>
+                                </div>
+                            }
+                            @if (booking.IsPickupDelivery)
+                            {
+                                <div class="mt-1">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25" style="font-size: 0.65rem;">
+                                        <i class="fas fa-truck-loading me-1"></i> CONCIERGE
+                                    </span>
+                                </div>
+                            }
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-light">@booking.Vehicle?.ModelName</span><br/>
+                            <small class="text-muted" style="letter-spacing: 1px;">@booking.Vehicle?.LicensePlate</small>
+                        </td>
+                        <td class="py-3 px-4">@booking.ScheduledDate.ToString("dd MMM yyyy")</td>
+                        <td class="py-3 px-4">
+                            <div class="fw-bold text-warning">₹@booking.FinalAmount.ToString("0.00")</div>
+                            <div class="x-small text-muted">@((booking.BookingDetails?.Count ?? 0)) Services</div>
+                            <div class="x-small text-info">@((booking.BookingParts?.Count ?? 0)) Parts</div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="badge @statusBadge rounded-pill px-3 py-2" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                @booking.Status
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="d-flex flex-column gap-1">
+                                @if(booking.BookingParts != null && booking.BookingParts.Any())
+                                {
+                                    @foreach(var bp in booking.BookingParts)
+                                    {
+                                        <div class="badge bg-dark border border-secondary text-light text-start p-2" style="font-size: 0.7rem; font-weight: normal;">
+                                            <i class="fas fa-cog text-info me-1"></i> @bp.Quantity x @bp.Part?.Name (₹@((bp.Quantity * bp.UnitPriceAtBooking).ToString("0")))
+                                        </div>
+                                    }
+                                }
+                                <button class="btn btn-sm btn-outline-info mt-1" style="font-size: 0.7rem;" data-bs-toggle="modal" data-bs-target="#addPartModal-@booking.Id">
+                                    <i class="fas fa-plus-circle me-1"></i> Add Part
+                                </button>
+                            </div>
+
+                            <!-- Add Part Modal -->
+                            <div class="modal fade" id="addPartModal-@booking.Id" tabindex="-1">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content glass-card border-0">
+                                        <div class="modal-header border-bottom border-dark">
+                                            <h5 class="modal-title fw-bold">Inventory: Add Parts to #@booking.BookingReference</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <form asp-action="AddPart" method="post">
+                                            <input type="hidden" name="bookingId" value="@booking.Id" />
+                                            <div class="modal-body">
+                                                <div class="mb-3 text-start">
+                                                    <label class="form-label text-muted small fw-bold">Select Inventory Item</label>
+                                                    <select name="partId" class="form-select bg-dark text-white border-secondary" required>
+                                                        <option value="">-- Choose Part --</option>
+                                                        @foreach (var p in (ViewBag.PartsList as IEnumerable<AutoSphere.Models.Part>) ?? Enumerable.Empty<AutoSphere.Models.Part>())
+                                                        {
+                                                            <option value="@p.Id">@p.Name (₹@p.Price) - Stock: @p.StockQuantity</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3 text-start">
+                                                    <label class="form-label text-muted small fw-bold">Quantity</label>
+                                                    <input type="number" name="quantity" class="form-control bg-dark text-white border-secondary" value="1" min="1" required />
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-top border-dark text-start">
+                                                <p class="x-small text-muted flex-grow-1">Adding a part will automatically deduct from inventory and update the customer bill.</p>
+                                                <button type="submit" class="btn btn-primary-custom">ADD TO BILL</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            @{
+                                var assignedSA = booking.StaffAssignments?.FirstOrDefault();
+                                var staffList = ViewBag.StaffList as IEnumerable<AutoSphere.Models.Staff>;
+                            }
+
+                            @if (assignedSA != null)
+                            {
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="bg-primary bg-opacity-10 p-2 rounded border border-primary border-opacity-25">
+                                        <i class="fas fa-user-wrench text-primary me-2"></i>
+                                        <span class="text-light fw-bold">@assignedSA.Staff?.Name</span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-link text-muted p-0" onclick="document.getElementById('assign-form-@booking.Id').classList.toggle('d-none')">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
+                                </div>
+                            }
+                            
+                            <div id="assign-form-@booking.Id" class="@(assignedSA != null ? "d-none mt-2" : "")">
+                                <form asp-action="AssignStaff" method="post" class="d-flex gap-2 align-items-center">
+                                    <input type="hidden" name="bookingId" value="@booking.Id" />
+                                    <select name="staffId" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto;" required>
+                                        <option value="">-- Assign --</option>
+                                        @foreach (var s in staffList ?? Enumerable.Empty<AutoSphere.Models.Staff>())
+                                        {
+                                            <option value="@s.Id">@s.Name</option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary" title="Confirm Assignment">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                            <form asp-action="UpdateStatus" method="post" class="d-inline-flex gap-2 align-items-center">
+                                <input type="hidden" name="id" value="@booking.Id" />
+                                <select name="status" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto;">
+                                    <option value="Pending" selected="@(booking.Status == "Pending" ? "selected" : null)">Pending</option>
+                                    <option value="Confirmed" selected="@(booking.Status == "Confirmed" ? "selected" : null)">Confirmed</option>
+                                    <option value="In Progress" selected="@(booking.Status == "In Progress" ? "selected" : null)">In Progress</option>
+                                    <option value="WaitingForParts" selected="@(booking.Status == "WaitingForParts" ? "selected" : null)">Await Parts</option>
+                                    <option value="Completed" selected="@(booking.Status == "Completed" ? "selected" : null)">Completed</option>
+                                    <option value="Cancelled" selected="@(booking.Status == "Cancelled" ? "selected" : null)">Cancelled</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-primary-custom" title="Update"><i class="fas fa-sync-alt"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">No bookings available.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

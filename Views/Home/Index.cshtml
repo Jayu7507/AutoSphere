@@ -1,0 +1,531 @@
+@{
+    ViewData["Title"] = "Premium Vehicle Services";
+}
+
+<style>
+    .hero-section {
+        background: linear-gradient(rgba(11, 15, 25, 0.4), rgba(11, 15, 25, 0.8)), url('/images/hero-bg.png') center/cover no-repeat;
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-content {
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 8vw, 5rem);
+        font-weight: 800;
+        letter-spacing: -1px;
+        line-height: 1.1;
+    }
+
+    .hero-title span {
+        background: linear-gradient(to right, var(--secondary), #ff9f43);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 150px;
+        background: linear-gradient(to top, var(--dark-bg), transparent);
+    }
+
+    /* Animations */
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 30px;
+        transition: 0.3s;
+    }
+
+    .stat-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: var(--secondary);
+    }
+
+    .step-number {
+        width: 40px;
+        height: 40px;
+        background: var(--secondary);
+        color: #000;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        margin: 0 auto 20px;
+    }
+</style>
+
+<div id="hero" class="hero-section">
+    <div class="container text-center hero-content">
+        <h1 class="hero-title text-white mb-4">ENGINEERING <br> <span>PREMIUM CARE</span></h1>
+        <p class="lead text-light mb-5 fs-4 opacity-75 mx-auto" style="max-width: 700px;">Experience the next level of automotive maintenance with India's most advanced digital service platform.</p>
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a asp-controller="Service" asp-action="Index" class="btn btn-secondary-custom btn-lg px-5 py-3 fs-5 rounded-pill fw-bold">BOOK SERVICE <i class="fas fa-chevron-right ms-2"></i></a>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn btn-secondary-custom btn-lg px-5 py-3 fs-5 rounded-pill fw-bold">BOOK SERVICE <i class="fas fa-chevron-right ms-2"></i></a>
+            }
+            <a asp-controller="Service" asp-action="Index" class="btn btn-outline-light btn-lg px-5 py-3 fs-5 rounded-pill">OUR SERVICES</a>
+        </div>
+    </div>
+    <div class="hero-overlay"></div>
+</div>
+
+<!-- Tracking Search Section & Quick Stats -->
+<div class="container" style="margin-top: -100px; position: relative; z-index: 100;">
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-10 col-xl-8">
+            <div class="glass-card p-3 p-md-4 shadow-lg border-primary border-opacity-25" style="backdrop-filter: blur(30px); border-radius: 30px;">
+                <form asp-controller="Booking" asp-action="Track" method="get" class="row g-3 align-items-center">
+                    <div class="col-md-4 text-center text-md-start ps-md-4">
+                        <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+                            <i class="fas fa-satellite-dish text-primary fs-3 me-3"></i>
+                            <div>
+                                <span class="text-white fw-bold d-block mb-0" style="letter-spacing: 0.5px;">Track Your Service</span>
+                                <small class="text-muted small">Enter 8-digit Reference ID</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-muted px-3" style="border-radius: 15px 0 0 15px;"><i class="fas fa-search"></i></span>
+                            <input type="text" name="reference" class="form-control bg-dark text-white border-secondary py-3" style="border-radius: 0 15px 15px 0;" placeholder="BKG12345" required />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary-custom w-100 py-3 fw-bold rounded-pill shadow-sm">
+                            TRACK LIVE <i class="fas fa-chevron-right ms-2 small"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Bar -->
+    <div class="row g-4 justify-content-center">
+        <div class="col-6 col-md-3">
+            <div class="stat-card text-center blur-glass py-4">
+                <div class="h2 fw-800 mb-0 text-white">12k+</div>
+                <div class="small text-muted text-uppercase ls-1">Happy Users</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card text-center blur-glass py-4">
+                <div class="h2 fw-800 mb-0 text-white">45+</div>
+                <div class="small text-muted text-uppercase ls-1">Expert Centers</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card text-center blur-glass py-4">
+                <div class="h2 fw-800 mb-0 text-white">@ViewBag.AverageRating</div>
+                <div class="small text-muted text-uppercase ls-1">User Rating (@ViewBag.ReviewCount reviews)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="services" class="container my-5 py-5">
+    <div class="text-center mb-5">
+        <h6 class="text-secondary fw-bold text-uppercase ls-2">The Standard</h6>
+        <h2 class="display-5 fw-bold text-white">Why Choose AutoSphere?</h2>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-md-4">
+            <div class="glass-card card-feature p-5 text-center h-100">
+                <div class="mb-4 text-primary"><i class="fas fa-microchip fa-3x"></i></div>
+                <h4 class="fw-bold mb-3">Hi-Tech Diagnostics</h4>
+                <p class="text-muted mb-0">We use AI-driven diagnostic tools to identify issues with clinical precision.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card card-feature p-5 text-center h-100">
+                <div class="mb-4 text-primary"><i class="fas fa-gem fa-3x"></i></div>
+                <h4 class="fw-bold mb-3">Premium Spares</h4>
+                <p class="text-muted mb-0">Only 100% genuine OEM parts used for every repair, guaranteed.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card card-feature p-5 text-center h-100">
+                <div class="mb-4 text-primary"><i class="fas fa-user-check fa-3x"></i></div>
+                <h4 class="fw-bold mb-3">Certified Pros</h4>
+                <p class="text-muted mb-0">Every mechanic is master-certified with a minimum 5 years experience.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Process Section -->
+<div id="process" class="bg-dark py-5 my-5 border-top border-bottom border-secondary" style="background-color: #0d1117 !important;">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-5 mb-5 mb-lg-0">
+                <h6 class="text-secondary fw-bold text-uppercase ls-2">The Blueprint</h6>
+                <h2 class="display-5 fw-bold mb-4">Our Seamless Process</h2>
+                <p class="text-muted lead mb-4">Precision engineering meets digital simplicity. Here is how we ensure your vehicle gets the best treatment in the industry.</p>
+                <div class="d-flex align-items-center mb-4">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                        <i class="fas fa-microscope text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">Full Transparency</h6>
+                        <small class="text-muted">Real-time alerts and photo updates.</small>
+                    </div>
+                </div>
+                <a asp-action="Register" asp-controller="Account" class="btn btn-primary-custom btn-lg px-5 rounded-pill">GET STARTED</a>
+            </div>
+            <div class="col-lg-7">
+                <div class="row g-4">
+                    <div class="col-sm-6">
+                        <div class="p-4 rounded-4 border border-secondary transition-hover h-100 glass-card">
+                            <div class="step-number mb-3">01</div>
+                            <h5 class="fw-bold">Smart Booking</h5>
+                            <p class="small text-muted mb-0">Select your services and preferred time slot via our mobile-responsive portal.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-4 rounded-4 border border-secondary transition-hover h-100 glass-card">
+                            <div class="step-number mb-3">02</div>
+                            <h5 class="fw-bold">Valet Pickup</h5>
+                            <p class="small text-muted mb-0">Our professional driver picks up your vehicle from your home or office.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-4 rounded-4 border border-secondary transition-hover h-100 glass-card">
+                            <div class="step-number mb-3">03</div>
+                            <h5 class="fw-bold">Tech-Infused Service</h5>
+                            <p class="small text-muted mb-0">Certified experts handle your car using advanced AI diagnostic tools.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-4 rounded-4 border border-secondary transition-hover h-100 glass-card">
+                            <div class="step-number mb-3">04</div>
+                            <h5 class="fw-bold">Express Delivery</h5>
+                            <p class="small text-muted mb-0">Final quality check followed by sanitization and doorstep delivery.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Blogs Section: AutoSphere Magazine -->
+<div id="blogs" class="container-fluid my-5 py-5" style="background: radial-gradient(circle at bottom left, rgba(15, 82, 186, 0.03), transparent);">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h6 class="text-secondary fw-bold text-uppercase ls-2">The Magazine</h6>
+            <h2 class="display-5 fw-bold text-white">Latest Intelligence</h2>
+        </div>
+
+        <div class="row g-4">
+            @if (ViewBag.LatestPosts != null)
+            {
+                @foreach (var post in (IEnumerable<AutoSphere.Models.BlogPost>)ViewBag.LatestPosts)
+                {
+                    <div class="col-lg-4">
+                        <div class="glass-card overflow-hidden h-100 transition-hover border-opacity-10" style="border-bottom: 3px solid @(post.Category == "Technology" ? "var(--primary)" : "var(--secondary)");">
+                            <div class="position-absolute top-0 end-0 m-3 z-3">
+                                <span class="badge rounded-pill bg-dark border border-secondary px-3 py-2 shadow text-uppercase">@post.ReadTimeMinutes MIN READ</span>
+                            </div>
+                            <img src="@post.ImageUrl" class="img-fluid w-100" style="height: 240px; object-fit: cover;" alt="@post.Title">
+                            <div class="p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-primary bg-opacity-10 p-1 rounded-circle me-2">
+                                        <i class="fas fa-user-edit text-primary" style="font-size: 0.7rem;"></i>
+                                    </div>
+                                    <span class="x-small text-muted fw-bold text-uppercase">@post.AuthorName, @post.Category SPECIALIST</span>
+                                </div>
+                                <h4 class="fw-bold text-white mb-2" style="font-size: 1.25rem;">@post.Title</h4>
+                                <p class="text-muted small mb-4">@post.Excerpt</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="x-small text-muted text-uppercase">@post.CreatedAt.ToString("dd MMM yyyy")</span>
+                                    <a asp-controller="Blog" asp-action="Details" asp-route-slug="@post.Slug" class="btn btn-link text-secondary text-decoration-none fw-bold p-0 x-small ls-1">EXPLORE ARTICLE <i class="fas fa-arrow-right ms-1"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+
+            <!-- Newsletter CTA -->
+            <div class="col-lg-4">
+                <div class="glass-card p-5 h-100 d-flex flex-column justify-content-center text-center border-dashed" style="border: 2px dashed rgba(255,255,255,0.05)!important; background: rgba(15, 82, 186, 0.05);">
+                    <div class="mb-4">
+                        <div class="bg-dark d-inline-block p-4 rounded-circle mb-3">
+                            <i class="fas fa-paper-plane text-primary fa-2x"></i>
+                        </div>
+                        <h4 class="fw-bold">Join the Insider Circle</h4>
+                        <p class="text-muted small">Get exclusive automotive insights, tech deep-dives, and early access to service slots.</p>
+                    </div>
+                    <form id="newsletterForm" onsubmit="handleSubscribe(event)">
+                        <div class="mb-3">
+                            <input type="email" id="subscriberEmail" class="form-control bg-dark border-secondary text-white py-3 text-center" placeholder="your@email.com" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary-custom w-100 py-3 rounded-pill fw-bold">SUBSCRIBE NOW</button>
+                    </form>
+                    <div id="subscribeMessage" class="mt-3 small d-none"></div>
+                    <p class="x-small text-muted mt-3 mb-0">No spam. Just performance. Unsubscribe anytime.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function handleSubscribe(e) {
+        e.preventDefault();
+        const email = document.getElementById('subscriberEmail').value;
+        const msgEl = document.getElementById('subscribeMessage');
+        const form = document.getElementById('newsletterForm');
+
+        fetch('/Home/Subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `email=${encodeURIComponent(email)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            msgEl.classList.remove('d-none', 'text-success', 'text-danger');
+            msgEl.classList.add(data.success ? 'text-success' : 'text-danger');
+            msgEl.innerText = data.message;
+            if (data.success) form.reset();
+        })
+        .catch(() => {
+            msgEl.innerText = "Connection error. Please try again.";
+            msgEl.classList.remove('d-none');
+            msgEl.classList.add('text-danger');
+        });
+    }
+
+    /* document.getElementById('subscriberEmail').focus(); */
+</script>
+
+<!-- About Us Section -->
+<div id="about" class="container-fluid py-5" style="background: linear-gradient(to right, #0b0f19, #131926);">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0 pe-lg-5">
+                <div class="position-relative">
+                    <img src="/images/about_main.png" class="img-fluid rounded-4 shadow-lg" alt="About Us">
+                    <div class="glass-card p-3 position-absolute bottom-0 end-0 m-3 d-none d-md-block" style="width: 200px;">
+                        <span class="h2 fw-bold text-secondary">15+</span>
+                        <p class="small text-muted mb-0">Years of Precision Heritage</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h6 class="text-secondary fw-bold text-uppercase ls-2">The Legacy</h6>
+                <h2 class="display-6 fw-bold text-white mb-4">Driven by Innovation, Defined by Trust</h2>
+                <p class="text-muted mb-4">AutoSphere was born from a simple observation: vehicle owners deserved better than messy workshops and hidden prices. We combined world-class mechanical expertise with cutting-edge technology to create India's most trusted service ecosystem.</p>
+                <div class="row g-4 mb-4">
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2 fs-5"></i>
+                            <span class="fw-bold">ISO 9001 Certified</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-check-circle text-success me-2 fs-5"></i>
+                            <span class="fw-bold">Pan-India Support</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-outline-light px-5 rounded-pill">MEET THE TEAM</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials Section: Customer Voices -->
+<div id="testimonials" class="container my-5 py-5">
+    <div class="text-center mb-5">
+        <h6 class="text-secondary fw-bold text-uppercase ls-2">Social Proof</h6>
+        <h2 class="display-5 fw-bold text-white">Customer Voices</h2>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        @if (ViewBag.ApprovedReviews != null && ((IEnumerable<AutoSphere.Models.Review>)ViewBag.ApprovedReviews).Any())
+        {
+            @foreach (var review in (IEnumerable<AutoSphere.Models.Review>)ViewBag.ApprovedReviews)
+            {
+                <div class="col-md-4">
+                    <div class="glass-card p-4 h-100 transition-hover border-opacity-10">
+                        <div class="d-flex mb-3">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star @(i <= review.Rating ? "text-secondary" : "text-muted opacity-25") small"></i>
+                            }
+                        </div>
+                        <p class="text-light small mb-4 italic" style="font-style: italic;">"@review.Comment"</p>
+                        <div class="d-flex align-items-center mt-auto">
+                            <div class="bg-primary bg-opacity-10 p-2 rounded-circle me-3">
+                                <i class="fas fa-user-circle text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-white">@(review.User?.FullName ?? "Verified User")</h6>
+                                <small class="text-muted x-small">PLATFORM SUPPORTER</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-md-12 text-center">
+                <div class="glass-card p-5 border-dashed" style="border: 2px dashed rgba(255,255,255,0.05)!important; background: rgba(255, 255, 255, 0.02);">
+                    <i class="fas fa-quote-right fa-3x text-muted mb-3 opacity-10"></i>
+                    <h5 class="text-muted">No reviews yet. Be the first to tell us about your experience!</h5>
+                    <a asp-controller="User" asp-action="Dashboard" class="btn btn-outline-secondary rounded-pill px-4 mt-3">WRITE A REVIEW</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- FAQ Section -->
+<div id="faq" class="container my-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h6 class="text-secondary fw-bold text-uppercase ls-2">Got Questions?</h6>
+                <h2 class="display-5 fw-bold text-white">Frequently Asked</h2>
+            </div>
+            
+            <div class="accordion border-0" id="faqAccordion">
+                <div class="accordion-item glass-card mb-3 border-secondary">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button bg-transparent text-white fw-bold shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            How do I track my service in real-time?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted small pt-0">
+                            Once your booking is confirmed, you can access your personal Dashboard. There, you'll see live status updates, from 'Pickup' to 'Service in Progress', including photos of parts being replaced.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item glass-card mb-3 border-secondary">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button bg-transparent text-white fw-bold collapsed shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            Are the spare parts genuine?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted small pt-0">
+                            Absolutely. We use 100% genuine OEM/OES spare parts. You will receive the old replaced parts in a box during delivery as proof of replacement.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="accordion-item glass-card mb-3 border-secondary">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button bg-transparent text-white fw-bold collapsed shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            Can I cancel my booking?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-muted small pt-0">
+                            Yes, you can cancel your booking up to 2 hours before the scheduled time free of charge via the 'My Dashboard' section.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact Section -->
+<div id="contact" class="container my-5 py-5">
+    <div class="glass-card p-0 overflow-hidden border-0">
+        <div class="row g-0">
+            <div class="col-lg-5 bg-primary p-5 text-white d-flex flex-column justify-content-between">
+                <div>
+                    <h2 class="fw-bold mb-4">Contact Us</h2>
+                    <p class="opacity-75 mb-5">Have a fleet of vehicles or a custom repair request? Reach out to our concierge team.</p>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="fas fa-map-marker-alt me-3 fs-3 text-secondary"></i>
+                        <div>
+                            <h6 class="fw-bold mb-0">Our Hub</h6>
+                            <small class="opacity-75">123 Tech Park, Sector 45, Bengaluru</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="fas fa-phone-alt me-3 fs-3 text-secondary"></i>
+                        <div>
+                            <h6 class="fw-bold mb-0">Concierge</h6>
+                            <small class="opacity-75">+91 800-SPHERE-01</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-envelope me-3 fs-3 text-secondary"></i>
+                        <div>
+                            <h6 class="fw-bold mb-0">Email</h6>
+                            <small class="opacity-75">support@autosphere.com</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5 d-flex gap-3">
+                    <a href="#" class="btn btn-secondary bg-white text-primary rounded-circle" style="width: 40px; height: 40px; padding: 8px;"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="btn btn-secondary bg-white text-primary rounded-circle" style="width: 40px; height: 40px; padding: 8px;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="btn btn-secondary bg-white text-primary rounded-circle" style="width: 40px; height: 40px; padding: 8px;"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-7 p-5">
+                <h4 class="fw-bold mb-4">Send a Message</h4>
+                <form>
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small fw-bold">Full Name</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-white" placeholder="John Doe">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted small fw-bold">Email Address</label>
+                            <input type="email" class="form-control bg-dark border-secondary text-white" placeholder="john@example.com">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label text-muted small fw-bold">Subject</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-white" placeholder="Repair Inquiry">
+                        </div>
+                        <div class="col-12 mb-4">
+                            <label class="form-label text-muted small fw-bold">Message</label>
+                            <textarea class="form-control bg-dark border-secondary text-white" rows="5" placeholder="How can we help?"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button class="btn btn-primary-custom px-5 py-3 rounded-pill fw-bold w-100">SEND MESSAGE</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

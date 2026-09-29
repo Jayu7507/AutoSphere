@@ -1,0 +1,72 @@
+@model IEnumerable<AutoSphere.Models.Part>
+@{
+    ViewData["Title"] = "Inventory Management";
+}
+
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold m-0">Vehicle Parts Stock</h4>
+        <a asp-action="Create" class="btn btn-warning btn-sm"><i class="fas fa-plus me-1 text-dark"></i> Add New Part</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-dark table-hover align-middle border-secondary">
+            <thead>
+                <tr>
+                    <th class="border-secondary text-muted small">Part Details</th>
+                    <th class="border-secondary text-muted small text-center">SKU</th>
+                    <th class="border-secondary text-muted small text-end">Price</th>
+                    <th class="border-secondary text-muted small text-center">Stock</th>
+                    <th class="border-secondary text-muted small text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var part in Model)
+                {
+                    <tr>
+                        <td class="border-secondary py-3">
+                            <div class="fw-bold">@part.Name</div>
+                            <div class="d-flex gap-1 mt-1">
+                                @if (part.StockQuantity <= part.ThresholdLevel && part.IsActive)
+                                {
+                                    <span class="badge bg-danger x-small animate-pulse"><i class="fas fa-exclamation-triangle me-1"></i> Low Stock</span>
+                                }
+                                @if (!part.IsActive)
+                                {
+                                    <span class="badge bg-secondary x-small"><i class="fas fa-ban me-1"></i> Deactivated</span>
+                                }
+                            </div>
+                        </td>
+                        <td class="border-secondary text-center text-muted small">@part.SKU</td>
+                        <td class="border-secondary text-end fw-bold">₹@part.Price.ToString("N2")</td>
+                        <td class="border-secondary text-center">
+                            <span class="badge @(part.StockQuantity <= part.ThresholdLevel ? (part.IsActive ? "bg-danger" : "bg-dark") : "bg-dark border border-secondary") px-3">
+                                @part.StockQuantity
+                            </span>
+                        </td>
+                        <td class="border-secondary text-end">
+                            <a asp-action="Edit" asp-route-id="@part.Id" class="btn btn-link text-primary p-0 me-3"><i class="fas fa-edit"></i></a>
+                            @if (part.IsActive)
+                            {
+                                <form asp-action="Delete" asp-route-id="@part.Id" method="post" style="display:inline;" onsubmit="return confirm('Deactivate this part? It will still stay in records for old bookings.');">
+                                    <button type="submit" class="btn btn-link text-danger p-0"><i class="fas fa-trash-alt"></i></button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .animate-pulse {
+        animation: pulse 1.5s infinite;
+    }
+    @@keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(0.95); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
