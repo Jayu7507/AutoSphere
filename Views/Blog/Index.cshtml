@@ -1,0 +1,61 @@
+@model IEnumerable<AutoSphere.Models.BlogPost>
+@{
+    ViewData["Title"] = "Technical Insights & Articles";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h6 class="text-secondary text-uppercase fw-bold letter-spacing-2">The Intelligence Dispatch</h6>
+        <h1 class="display-5 fw-bold text-white mb-3">Automotive Insights & Technical Reports</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">Stay up-to-date with electric powertrain telemetry, preventative mechanics, and high-performance maintenance standards.</p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="glass-card p-5 text-center my-4">
+            <i class="fas fa-newspaper text-muted fa-3x mb-3"></i>
+            <h4 class="text-white">No articles published yet</h4>
+            <p class="text-muted">Check back soon for our newest automotive intelligence updates.</p>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-custom mt-2">Return Home</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var post in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card h-100 d-flex flex-column overflow-hidden p-0 border border-secondary border-opacity-10">
+                        @if (!string.IsNullOrEmpty(post.ImageUrl))
+                        {
+                            <img src="@post.ImageUrl" alt="@post.Title" class="w-100" style="height: 200px; object-fit: cover;" onerror="this.src='/images/hero-bg.png';" />
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center justify-content-center bg-dark" style="height: 200px;">
+                                <i class="fas fa-car fa-3x text-secondary opacity-50"></i>
+                            </div>
+                        }
+
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25 px-2 py-1">@post.Category</span>
+                                <small class="text-muted"><i class="far fa-clock me-1"></i> @post.ReadTimeMinutes min read</small>
+                            </div>
+
+                            <h4 class="fw-bold text-white mb-2 fs-5">@post.Title</h4>
+                            <p class="text-muted small flex-grow-1">@post.Excerpt</p>
+
+                            <div class="d-flex justify-content-between align-items-center pt-3 mt-auto border-top border-secondary border-opacity-10">
+                                <small class="text-muted"><i class="fas fa-user-edit me-1"></i> @post.AuthorName</small>
+                                <a asp-controller="Blog" asp-action="Details" asp-route-slug="@post.Slug" class="text-secondary fw-bold text-decoration-none small">
+                                    Read Article <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

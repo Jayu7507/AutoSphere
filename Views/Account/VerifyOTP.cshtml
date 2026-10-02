@@ -1,0 +1,46 @@
+@model AutoSphere.Models.ViewModels.VerifyOTPViewModel
+@{
+    ViewData["Title"] = "Verify Email OTP";
+}
+
+<div class="container py-5 my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="glass-card p-4 p-md-5 text-center">
+                <div class="d-inline-flex p-3 rounded-circle bg-info bg-opacity-10 text-info mb-3">
+                    <i class="fas fa-shield-virus fa-2x"></i>
+                </div>
+                <h3 class="fw-bold text-white mb-2">Two-Step Verification</h3>
+                <p class="text-muted small mb-4">We've sent a 6-digit verification code to <br><span class="text-white fw-bold">@Model.Email</span></p>
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div class="alert alert-danger bg-dark border-0 py-2 small mb-3">
+                        <div asp-validation-summary="All" class="text-danger mb-0"></div>
+                    </div>
+                }
+
+                <form asp-controller="Account" asp-action="VerifyOTP" method="post">
+                    <input type="hidden" asp-for="Email" />
+                    
+                    <div class="mb-4">
+                        <label asp-for="OTP" class="form-label text-muted small fw-bold">Enter 6-Digit Code</label>
+                        <input asp-for="OTP" class="form-control bg-dark text-white border-secondary text-center fs-3 letter-spacing-2" maxlength="6" placeholder="000000" style="letter-spacing: 8px; font-weight: bold;" required autofocus />
+                        <span asp-validation-for="OTP" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-custom w-100 py-3 fw-bold rounded-pill shadow-sm">
+                        CONFIRM & PROCEED <i class="fas fa-check ms-2"></i>
+                    </button>
+                </form>
+
+                <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+                    <p class="text-muted small mb-0">
+                        Didn't receive the email? Check spam or 
+                        <a asp-action="Login" class="text-secondary text-decoration-none">Back to Login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

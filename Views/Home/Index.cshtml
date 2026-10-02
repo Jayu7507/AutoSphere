@@ -502,26 +502,27 @@
             </div>
             <div class="col-lg-7 p-5">
                 <h4 class="fw-bold mb-4">Send a Message</h4>
-                <form>
+                <div id="contactMsg" class="alert d-none mb-3"></div>
+                <form id="contactForm" onsubmit="handleContact(event)">
                     <div class="row g-3">
                         <div class="col-md-6 mb-3">
                             <label class="form-label text-muted small fw-bold">Full Name</label>
-                            <input type="text" class="form-control bg-dark border-secondary text-white" placeholder="John Doe">
+                            <input type="text" name="Name" class="form-control bg-dark border-secondary text-white" placeholder="John Doe" required>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label text-muted small fw-bold">Email Address</label>
-                            <input type="email" class="form-control bg-dark border-secondary text-white" placeholder="john@example.com">
+                            <input type="email" name="Email" class="form-control bg-dark border-secondary text-white" placeholder="john@example.com" required>
                         </div>
                         <div class="col-12 mb-3">
                             <label class="form-label text-muted small fw-bold">Subject</label>
-                            <input type="text" class="form-control bg-dark border-secondary text-white" placeholder="Repair Inquiry">
+                            <input type="text" name="Subject" class="form-control bg-dark border-secondary text-white" placeholder="Repair Inquiry">
                         </div>
                         <div class="col-12 mb-4">
                             <label class="form-label text-muted small fw-bold">Message</label>
-                            <textarea class="form-control bg-dark border-secondary text-white" rows="5" placeholder="How can we help?"></textarea>
+                            <textarea name="Message" class="form-control bg-dark border-secondary text-white" rows="5" placeholder="How can we help?" required></textarea>
                         </div>
                         <div class="col-12">
-                            <button class="btn btn-primary-custom px-5 py-3 rounded-pill fw-bold w-100">SEND MESSAGE</button>
+                            <button type="submit" id="contactSubmitBtn" class="btn btn-primary-custom px-5 py-3 rounded-pill fw-bold w-100">SEND MESSAGE</button>
                         </div>
                     </div>
                 </form>
@@ -529,3 +530,39 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+    function handleContact(e) {
+        e.preventDefault();
+        const form = document.getElementById('contactForm');
+        const btn = document.getElementById('contactSubmitBtn');
+        const msgEl = document.getElementById('contactMsg');
+        const formData = new FormData(form);
+
+        btn.disabled = true;
+        btn.innerText = "SENDING...";
+
+        fetch('/Home/Contact', {
+            method: 'POST',
+            body: new URLSearchParams(formData)
+        })
+        .then(res => res.json())
+        .then(data => {
+            msgEl.className = 'alert ' + (data.success ? 'alert-success bg-dark border-success text-success' : 'alert-danger bg-dark border-danger text-danger');
+            msgEl.innerText = data.message;
+            if (data.success) {
+                form.reset();
+            }
+        })
+        .catch(() => {
+            msgEl.className = 'alert alert-danger bg-dark border-danger text-danger';
+            msgEl.innerText = 'Network error. Please try again.';
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerText = "SEND MESSAGE";
+        });
+    }
+</script>
+}

@@ -1,0 +1,187 @@
+@model AutoSphere.Models.ViewModels.BookingWizardViewModel
+@{
+    ViewData["Title"] = "Schedule Service";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="text-center mb-5">
+                <h6 class="text-secondary text-uppercase fw-bold letter-spacing-2">Booking Wizard</h6>
+                <h1 class="display-6 fw-bold text-white mb-2">Schedule Your Maintenance</h1>
+                <p class="text-muted">Select your vehicle, choose scheduling dates, and add custom requirements.</p>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="alert alert-danger bg-dark border-0 py-2 small mb-4">
+                    <div asp-validation-summary="All" class="text-danger mb-0"></div>
+                </div>
+            }
+
+            <form asp-controller="Booking" asp-action="Book" method="post" class="glass-card p-4 p-md-5">
+                <input type="hidden" asp-for="ServiceId" />
+                <input type="hidden" asp-for="ServiceName" />
+                <input type="hidden" asp-for="Price" />
+
+                <!-- Step 1: Vehicle Selection -->
+                <div class="mb-5 pb-4 border-bottom border-secondary border-opacity-25">
+                    <h4 class="fw-bold text-white mb-3">
+                        <span class="badge bg-primary rounded-circle me-2">1</span> Select Vehicle
+                    </h4>
+
+                    @if (Model.UserVehicles != null && Model.UserVehicles.Any())
+                    {
+                        <div class="mb-3">
+                            <label class="form-label text-muted small fw-bold">Select From Your Garage</label>
+                            <select asp-for="SelectedVehicleId" class="form-select bg-dark text-white border-secondary py-2" id="vehicleSelect">
+                                <option value="0">-- Add a New Vehicle --</option>
+                                @foreach (var v in Model.UserVehicles)
+                                {
+                                    <option value="@v.Id">@v.Brand @v.ModelName (@v.LicensePlate) - @v.Type</option>
+                                }
+                            </select>
+                        </div>
+                    }
+
+                    <div id="newVehicleFields" class="row g-3">
+                        <div class="col-md-3">
+                            <label asp-for="VehicleType" class="form-label text-muted small fw-bold">Vehicle Type</label>
+                            <select asp-for="VehicleType" class="form-select bg-dark text-white border-secondary">
+                                <option value="Car">Car</option>
+                                <option value="Bike">Bike / Motorcycle</option>
+                                <option value="SUV">SUV</option>
+                                <option value="EV">Electric Vehicle (EV)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Brand" class="form-label text-muted small fw-bold">Brand</label>
+                            <input asp-for="Brand" class="form-control bg-dark text-white border-secondary" placeholder="e.g. BMW, Hyundai" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="ModelName" class="form-label text-muted small fw-bold">Model</label>
+                            <input asp-for="ModelName" class="form-control bg-dark text-white border-secondary" placeholder="e.g. M3, Creta" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="LicensePlate" class="form-label text-muted small fw-bold">License Plate</label>
+                            <input asp-for="LicensePlate" class="form-control bg-dark text-white border-secondary text-uppercase" placeholder="KA01AB1234" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Service Packages -->
+                <div class="mb-5 pb-4 border-bottom border-secondary border-opacity-25">
+                    <h4 class="fw-bold text-white mb-3">
+                        <span class="badge bg-primary rounded-circle me-2">2</span> Service Packages
+                    </h4>
+                    <p class="text-muted small mb-3">Select the services you want included in this booking:</p>
+
+                    <div class="row g-3">
+                        @foreach (var s in Model.AvailableServices)
+                        {
+                            bool isChecked = Model.SelectedServiceIds.Contains(s.Id);
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="SelectedServiceIds" value="@s.Id" id="service_@s.Id" @(isChecked ? "checked" : "")>
+                                        <label class="form-check-label text-white fw-bold ms-2" for="service_@s.Id">
+                                            @s.Name
+                                            <small class="text-muted d-block fw-normal">₹@s.Price.ToString("N0")</small>
+                                        </label>
+                                    </div>
+                                    <span class="badge bg-secondary">₹@s.Price.ToString("N0")</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Step 3: Date & Convenience Services -->
+                <div class="mb-5 pb-4 border-bottom border-secondary border-opacity-25">
+                    <h4 class="fw-bold text-white mb-3">
+                        <span class="badge bg-primary rounded-circle me-2">3</span> Schedule & Location
+                    </h4>
+
+                    <div class="mb-4 col-md-6">
+                        <label asp-for="ScheduledDate" class="form-label text-muted small fw-bold">Select Date</label>
+                        <input asp-for="ScheduledDate" type="date" class="form-control bg-dark text-white border-secondary py-2" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <div class="form-check form-switch mb-2">
+                                    <input asp-for="IsDoorstepService" class="form-check-input" type="checkbox" id="doorstepSwitch">
+                                    <label class="form-check-label text-white fw-bold" for="doorstepSwitch">Doorstep Service</label>
+                                </div>
+                                <small class="text-muted d-block mb-3">Technician comes to your home or office</small>
+                                <div id="doorstepAddressField" style="display: none;">
+                                    <input asp-for="ServiceAddress" class="form-control bg-dark text-white border-secondary" placeholder="Enter complete service address..." />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <div class="form-check form-switch mb-2">
+                                    <input asp-for="IsPickupDelivery" class="form-check-input" type="checkbox" id="valetSwitch">
+                                    <label class="form-check-label text-white fw-bold" for="valetSwitch">Valet Pickup & Drop</label>
+                                </div>
+                                <small class="text-muted d-block mb-3">Professional flatbed or chauffeur pickup</small>
+                                <div id="valetAddressFields" style="display: none;">
+                                    <input asp-for="PickupAddress" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Pickup location address..." />
+                                    <input asp-for="DeliveryAddress" class="form-control bg-dark text-white border-secondary" placeholder="Return delivery address..." />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Notes -->
+                <div class="mb-4">
+                    <label asp-for="AdditionalNotes" class="form-label text-muted small fw-bold">Special Instructions / Custom Symptoms</label>
+                    <textarea asp-for="AdditionalNotes" rows="3" class="form-control bg-dark text-white border-secondary" placeholder="e.g. Squeaking noise when braking from 60km/h, please check brake pads."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-secondary-custom w-100 py-3 fs-5 fw-bold rounded-pill shadow-sm">
+                    CONTINUE TO SUMMARY & CHECKOUT <i class="fas fa-arrow-right ms-2"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const vehicleSelect = document.getElementById('vehicleSelect');
+    const newVehicleFields = document.getElementById('newVehicleFields');
+    if (vehicleSelect) {
+        vehicleSelect.addEventListener('change', function() {
+            if (this.value != "0") {
+                newVehicleFields.style.display = 'none';
+            } else {
+                newVehicleFields.style.display = 'flex';
+            }
+        });
+        if (vehicleSelect.value != "0") {
+            newVehicleFields.style.display = 'none';
+        }
+    }
+
+    const doorstepSwitch = document.getElementById('doorstepSwitch');
+    const doorstepField = document.getElementById('doorstepAddressField');
+    if (doorstepSwitch) {
+        doorstepSwitch.addEventListener('change', function() {
+            doorstepField.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+
+    const valetSwitch = document.getElementById('valetSwitch');
+    const valetFields = document.getElementById('valetAddressFields');
+    if (valetSwitch) {
+        valetSwitch.addEventListener('change', function() {
+            valetFields.style.display = this.checked ? 'block' : 'none';
+        });
+    }
+</script>
+}

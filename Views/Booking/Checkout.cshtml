@@ -1,0 +1,195 @@
+@model AutoSphere.Models.Booking
+@{
+    ViewData["Title"] = "Checkout & Secure Booking";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="text-center mb-5">
+                <h6 class="text-secondary text-uppercase fw-bold letter-spacing-2">Final Step</h6>
+                <h1 class="display-6 fw-bold text-white mb-2">Review & Confirm Booking</h1>
+                <p class="text-muted">Review your service package, apply promotional codes, and secure your time slot.</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Order Summary Left -->
+                <div class="col-md-7">
+                    <div class="glass-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center pb-3 mb-3 border-bottom border-secondary border-opacity-25">
+                            <div>
+                                <span class="badge bg-secondary px-3 py-1 mb-1">REF: @Model.BookingReference</span>
+                                <h5 class="fw-bold text-white mb-0">@Model.Vehicle?.Brand @Model.Vehicle?.ModelName</h5>
+                                <small class="text-muted">Plate: @Model.Vehicle?.LicensePlate</small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">Scheduled For</small>
+                                <span class="text-white fw-bold">@Model.ScheduledDate.ToString("dd MMM yyyy")</span>
+                            </div>
+                        </div>
+
+                        <h6 class="text-white fw-bold mb-3">Selected Maintenance Services</h6>
+                        <div class="list-group list-group-flush bg-transparent mb-4">
+                            @foreach (var bd in Model.BookingDetails)
+                            {
+                                <div class="list-group-item bg-transparent text-white border-secondary border-opacity-10 d-flex justify-content-between align-items-center px-0 py-2">
+                                    <div>
+                                        <div class="fw-bold small">@bd.Service?.Name</div>
+                                    </div>
+                                    <span class="text-secondary fw-bold">₹@bd.PriceAtBooking.ToString("N0")</span>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Coupon Code Field -->
+                        <div class="p-3 rounded-3 bg-dark mb-3">
+                            <label class="form-label text-muted small fw-bold">Have a Promo / Coupon Code?</label>
+                            <div class="input-group">
+                                <input type="text" id="couponInput" class="form-control bg-dark text-white border-secondary" placeholder="e.g. WELCOME10" />
+                                <button type="button" class="btn btn-secondary-custom" onclick="applyCoupon()">APPLY</button>
+                            </div>
+                            <div id="couponMsg" class="small mt-2"></div>
+                        </div>
+
+                        @if (Model.IsDoorstepService)
+                        {
+                            <div class="p-2 rounded bg-secondary bg-opacity-10 text-secondary small mb-2">
+                                <i class="fas fa-home me-1"></i> Doorstep Service to: <strong>@Model.ServiceAddress</strong>
+                            </div>
+                        }
+                        @if (Model.IsPickupDelivery)
+                        {
+                            <div class="p-2 rounded bg-primary bg-opacity-10 text-primary small">
+                                <i class="fas fa-truck me-1"></i> Valet Pickup from: <strong>@Model.PickupAddress</strong>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Payment Options Right -->
+                <div class="col-md-5">
+                    <div class="glass-card p-4 h-100 d-flex flex-column">
+                        <h5 class="fw-bold text-white mb-3">Cost Breakdown</h5>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Subtotal</span>
+                            <span class="text-white fw-bold" id="subtotalVal">₹@Model.TotalAmount.ToString("N2")</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-success" id="discountRow" style="display: none!important;">
+                            <span>Discount</span>
+                            <span id="discountVal">-₹0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">GST (18%)</span>
+                            <span class="text-white" id="gstVal">₹@((Model.FinalAmount * 0.18m).ToString("N2"))</span>
+                        </div>
+
+                        <div class="d-flex justify-content-between py-3 border-top border-secondary border-opacity-25 mb-4">
+                            <span class="fs-5 fw-bold text-white">Grand Total</span>
+                            <span class="fs-4 fw-bold text-secondary" id="grandTotalVal">₹@((Model.FinalAmount * 1.18m).ToString("N2"))</span>
+                        </div>
+
+                        <div class="mt-auto d-flex flex-column gap-3">
+                            <button type="button" class="btn btn-primary-custom py-3 fw-bold rounded-pill shadow-sm" onclick="payOnline()">
+                                <i class="fas fa-credit-card me-2"></i> PAY ONLINE (RAZORPAY)
+                            </button>
+                            <button type="button" class="btn btn-outline-custom py-3 fw-bold rounded-pill" onclick="payLater()">
+                                <i class="fas fa-store me-2"></i> PAY AT WORKSHOP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    let currentFinal = @Model.FinalAmount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    const bookingId = @Model.Id;
+
+    async function applyCoupon() {
+        const code = document.getElementById('couponInput').value.trim();
+        const msgDiv = document.getElementById('couponMsg');
+        if (!code) return;
+
+        const res = await fetch('/Coupon/Validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ code: code, currentTotal: currentFinal })
+        });
+        const data = await res.json();
+        if (data.success) {
+            msgDiv.className = 'small mt-2 text-success';
+            msgDiv.innerText = data.message;
+            currentFinal = data.newTotal;
+            document.getElementById('discountRow').style.display = 'flex';
+            document.getElementById('discountVal').innerText = '-₹' + data.discountAmount.toFixed(2);
+            document.getElementById('gstVal').innerText = '₹' + (currentFinal * 0.18).toFixed(2);
+            document.getElementById('grandTotalVal').innerText = '₹' + (currentFinal * 1.18).toFixed(2);
+        } else {
+            msgDiv.className = 'small mt-2 text-danger';
+            msgDiv.innerText = data.message;
+        }
+    }
+
+    async function payOnline() {
+        try {
+            const res = await fetch(`/Payment/Initiate?bookingId=${bookingId}`, { method: 'POST' });
+            if (!res.ok) {
+                const err = await res.json();
+                alert(err.message || 'Payment initiation failed. Please select Pay at Workshop.');
+                return;
+            }
+            const data = await res.json();
+            const options = {
+                key: data.key,
+                amount: data.amount,
+                currency: "INR",
+                name: data.name,
+                description: data.description,
+                order_id: data.orderId,
+                prefill: {
+                    name: data.customerName,
+                    email: data.customerEmail,
+                    contact: data.customerContact
+                },
+                theme: { color: "#0F52BA" },
+                handler: async function (response) {
+                    const verifyRes = await fetch('/Payment/Verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    });
+                    const verifyData = await verifyRes.json();
+                    if (verifyData.success) {
+                        window.location.href = `/Payment/Success?bookingId=${bookingId}`;
+                    } else {
+                        alert('Payment verification failed.');
+                    }
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } catch (e) {
+            alert('Payment initialization error. You can choose "Pay at Workshop" to confirm now.');
+        }
+    }
+
+    async function payLater() {
+        const res = await fetch(`/Payment/PayLater?bookingId=${bookingId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            window.location.href = `/Payment/Success?bookingId=${bookingId}`;
+        } else {
+            alert(data.message || 'Error confirming booking.');
+        }
+    }
+</script>
+}

@@ -1,0 +1,230 @@
+@model IEnumerable<AutoSphere.Models.Booking>
+@{
+    ViewData["Title"] = "Customer Garage & Dashboard";
+    var vehicles = ViewBag.Vehicles as List<AutoSphere.Models.Vehicle> ?? new List<AutoSphere.Models.Vehicle>();
+    DateTime? nextServiceDate = ViewBag.NextServiceDate as DateTime?;
+    string recommendedService = ViewBag.RecommendedService as string ?? "Routine Inspection";
+}
+
+<div class="container py-5">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h1 class="h2 fw-bold text-white mb-1">Customer Dashboard</h1>
+            <p class="text-muted small mb-0">Manage your garage, view service telemetry, and book precision maintenance.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-custom" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                <i class="fas fa-plus me-1"></i> Add Vehicle
+            </button>
+            <a asp-controller="Service" asp-action="Index" class="btn btn-secondary-custom">
+                <i class="fas fa-calendar-plus me-1"></i> Book New Service
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success bg-dark border-0 py-2 small mb-4">
+            <i class="fas fa-check-circle text-success me-1"></i> @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger bg-dark border-0 py-2 small mb-4">
+            <i class="fas fa-exclamation-circle text-danger me-1"></i> @TempData["Error"]
+        </div>
+    }
+
+    <!-- AI Predictive Maintenance Card -->
+    <div class="glass-card p-4 p-md-5 mb-5 border-primary border-opacity-50 position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(15, 82, 186, 0.15), rgba(26, 31, 44, 0.8));">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-primary px-3 py-1"><i class="fas fa-brain me-1"></i> AI PREDICTIVE TELEMETRY</span>
+                    <small class="text-muted">Calculated using service wear telemetry</small>
+                </div>
+                <h3 class="fw-bold text-white mb-2">Recommended: @recommendedService</h3>
+                <p class="text-white-50 mb-0">
+                    Based on your vehicle usage patterns and scheduled maintenance logs, your next recommended service window is around 
+                    <strong class="text-white">@(nextServiceDate?.ToString("MMMM dd, yyyy") ?? "Within 30 Days")</strong>.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a asp-controller="Service" asp-action="Index" class="btn btn-secondary-custom px-4 py-3 fw-bold rounded-pill shadow-sm">
+                    SCHEDULE THIS NOW <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehicles in Garage -->
+    <h4 class="fw-bold text-white mb-3"><i class="fas fa-car text-primary me-2"></i> My Garage (@vehicles.Count)</h4>
+    @if (!vehicles.Any())
+    {
+        <div class="glass-card p-4 text-center mb-5">
+            <i class="fas fa-car-side fa-3x text-muted mb-3"></i>
+            <h5 class="text-white">No vehicles added yet</h5>
+            <p class="text-muted small">Register your vehicle to track maintenance intervals and streamline appointments.</p>
+            <button type="button" class="btn btn-outline-custom" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                <i class="fas fa-plus me-1"></i> Add Your First Vehicle
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 mb-5">
+            @foreach (var v in vehicles)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-dark text-white border border-secondary border-opacity-25">@v.Type</span>
+                                <form asp-controller="User" asp-action="DeleteVehicle" asp-route-id="@v.Id" method="post" onsubmit="return confirm('Are you sure you want to remove this vehicle?');">
+                                    <button type="submit" class="btn btn-link text-danger p-0 small text-decoration-none">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <h4 class="fw-bold text-white mb-1">@v.Brand @v.ModelName</h4>
+                            <p class="text-muted small mb-0"><i class="fas fa-id-card me-1"></i> Plate: <strong class="text-white">@v.LicensePlate</strong></p>
+                        </div>
+                        <div class="mt-3 pt-3 border-top border-secondary border-opacity-10">
+                            <a asp-controller="Service" asp-action="Index" class="btn btn-outline-custom w-100 py-2 small">
+                                <i class="fas fa-wrench me-1"></i> Book Service for this
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Booking History -->
+    <h4 class="fw-bold text-white mb-3"><i class="fas fa-history text-secondary me-2"></i> Service History & Active Bookings</h4>
+    @if (!Model.Any())
+    {
+        <div class="glass-card p-4 text-center">
+            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+            <h5 class="text-white">No active or previous bookings</h5>
+            <p class="text-muted small">Choose from our precision service menu to get started.</p>
+            <a asp-controller="Service" asp-action="Index" class="btn btn-secondary-custom">
+                Explore Services
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="glass-card p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Reference</th>
+                            <th>Vehicle</th>
+                            <th>Date</th>
+                            <th>Services</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    <span class="badge bg-secondary font-monospace">@b.BookingReference</span>
+                                </td>
+                                <td>
+                                    <span class="text-white fw-bold">@b.Vehicle?.Brand @b.Vehicle?.ModelName</span>
+                                    <small class="text-muted d-block font-monospace">@b.Vehicle?.LicensePlate</small>
+                                </td>
+                                <td>
+                                    <span class="text-white">@b.ScheduledDate.ToString("dd MMM yyyy")</span>
+                                </td>
+                                <td>
+                                    <span class="text-white small">
+                                        @string.Join(", ", b.BookingDetails.Select(bd => bd.Service?.Name).Where(n => !string.IsNullOrEmpty(n)))
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-secondary fw-bold">₹@((b.FinalAmount * 1.18m).ToString("N0"))</span>
+                                </td>
+                                <td>
+                                    @switch (b.Status)
+                                    {
+                                        case "Completed":
+                                            <span class="badge bg-success">Completed</span>
+                                            break;
+                                        case "InProgress":
+                                            <span class="badge bg-primary">In Progress</span>
+                                            break;
+                                        case "Confirmed":
+                                            <span class="badge bg-info">Confirmed</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-warning text-dark">@b.Status</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-controller="Booking" asp-action="Track" asp-route-reference="@b.BookingReference" class="btn btn-outline-custom">
+                                            <i class="fas fa-satellite-dish"></i> Track
+                                        </a>
+                                        <a asp-controller="Payment" asp-action="DownloadInvoice" asp-route-bookingId="@b.Id" class="btn btn-outline-custom">
+                                            <i class="fas fa-file-pdf"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Add Vehicle Modal -->
+<div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border border-secondary text-white">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold" id="addVehicleModalLabel">Add Vehicle to Garage</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="User" asp-action="AddVehicle" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Vehicle Type</label>
+                        <select name="Type" class="form-select bg-dark text-white border-secondary">
+                            <option value="Car">Car</option>
+                            <option value="Bike">Bike / Two-Wheeler</option>
+                            <option value="SUV">SUV</option>
+                            <option value="EV">Electric Vehicle (EV)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Manufacturer / Brand</label>
+                        <input type="text" name="Brand" class="form-control bg-dark text-white border-secondary" placeholder="e.g. BMW, Honda, Tata" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Model Name</label>
+                        <input type="text" name="ModelName" class="form-control bg-dark text-white border-secondary" placeholder="e.g. 330i, City, Nexon" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">License Plate Number</label>
+                        <input type="text" name="LicensePlate" class="form-control bg-dark text-white border-secondary text-uppercase" placeholder="KA01AB1234" required />
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-secondary-custom">Save Vehicle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

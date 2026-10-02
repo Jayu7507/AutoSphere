@@ -1,0 +1,73 @@
+@model AutoSphere.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+}
+
+<div class="container py-5 my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="glass-card p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3">
+                        <i class="fas fa-user-lock fa-2x"></i>
+                    </div>
+                    <h3 class="fw-bold text-white">Welcome Back</h3>
+                    <p class="text-muted small">Sign in to manage your vehicles & bookings</p>
+                </div>
+
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success bg-dark border-0 py-2 small mb-3">
+                        <i class="fas fa-check-circle text-success me-1"></i> @TempData["Success"]
+                    </div>
+                }
+
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                {
+                    <div class="alert alert-danger bg-dark border-0 py-2 small mb-3">
+                        <div asp-validation-summary="All" class="text-danger mb-0"></div>
+                    </div>
+                }
+
+                <form asp-controller="Account" asp-action="Login" method="post">
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label text-muted small fw-bold">Email Address</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-muted"><i class="fas fa-envelope"></i></span>
+                            <input asp-for="Email" class="form-control bg-dark text-white border-secondary" placeholder="user@autosphere.com" required autofocus />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <label asp-for="Password" class="form-label text-muted small fw-bold">Password</label>
+                            <a asp-action="ForgotPassword" class="text-secondary small text-decoration-none">Forgot password?</a>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-muted"><i class="fas fa-lock"></i></span>
+                            <input asp-for="Password" class="form-control bg-dark text-white border-secondary" placeholder="••••••••" required />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input asp-for="RememberMe" class="form-check-input bg-dark border-secondary" />
+                        <label asp-for="RememberMe" class="form-check-label text-muted small">Remember me on this device</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-secondary-custom w-100 py-3 fw-bold rounded-pill shadow-sm">
+                        SIGN IN <i class="fas fa-arrow-right ms-2"></i>
+                    </button>
+                </form>
+
+                <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-25">
+                    <p class="text-muted small mb-0">
+                        Don't have an account? 
+                        <a asp-controller="Account" asp-action="Register" class="text-secondary fw-bold text-decoration-none">Create Account</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

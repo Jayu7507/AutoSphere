@@ -74,6 +74,20 @@ public class HomeController : Controller
         return Json(new { success = true, message = "Welcome to the Inner Circle! You will receive our next intelligence update soon." });
     }
 
+    [HttpPost]
+    public async Task<IActionResult> Contact(ContactMessage model)
+    {
+        if (ModelState.IsValid)
+        {
+            model.CreatedAt = DateTime.UtcNow;
+            model.IsResolved = false;
+            _context.ContactMessages.Add(model);
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = "Thank you! Your message has been received. Our concierge team will reach out shortly." });
+        }
+        return Json(new { success = false, message = "Please fill in all required fields." });
+    }
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

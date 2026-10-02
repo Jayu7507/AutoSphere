@@ -1,0 +1,56 @@
+@model AutoSphere.Models.Booking
+@{
+    ViewData["Title"] = "Booking Confirmed!";
+}
+
+<div class="container py-5 my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="glass-card p-5 text-center">
+                <div class="d-inline-flex p-4 rounded-circle bg-success bg-opacity-10 text-success mb-4">
+                    <i class="fas fa-check-circle fa-4x"></i>
+                </div>
+
+                <h2 class="display-6 fw-bold text-white mb-2">Booking Confirmed!</h2>
+                <p class="text-muted mb-4">Your vehicle maintenance appointment has been scheduled with our master workshop.</p>
+
+                <div class="p-4 rounded-4 bg-dark border border-secondary border-opacity-25 text-start mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary border-opacity-25">
+                        <span class="text-muted small">Booking Reference</span>
+                        <span class="badge bg-secondary fs-6 px-3 py-1">@Model.BookingReference</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Vehicle</span>
+                        <span class="text-white fw-bold">@Model.Vehicle?.Brand @Model.Vehicle?.ModelName (@Model.Vehicle?.LicensePlate)</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Appointment Date</span>
+                        <span class="text-white fw-bold">@Model.ScheduledDate.ToString("dd MMMM yyyy")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small">Total Service Amount</span>
+                        <span class="text-secondary fw-bold">₹@((Model.FinalAmount * 1.18m).ToString("N2"))</span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column gap-3">
+                    <a asp-controller="Payment" asp-action="DownloadInvoice" asp-route-bookingId="@Model.Id" class="btn btn-outline-custom py-3 fw-bold">
+                        <i class="fas fa-file-pdf text-danger me-2"></i> Download Official Tax Invoice
+                    </a>
+
+                    <div class="d-flex gap-3">
+                        <a asp-controller="Booking" asp-action="Track" asp-route-reference="@Model.BookingReference" class="btn btn-secondary-custom w-100 py-3 fw-bold">
+                            <i class="fas fa-satellite-dish me-2"></i> Track Live Status
+                        </a>
+                        <a asp-controller="User" asp-action="Dashboard" class="btn btn-primary-custom w-100 py-3 fw-bold">
+                            <i class="fas fa-tachometer-alt me-2"></i> My Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

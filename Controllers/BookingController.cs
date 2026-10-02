@@ -22,14 +22,24 @@ namespace AutoSphere.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Book(int serviceId)
+        public async Task<IActionResult> Book(int? serviceId)
         {
             var userIdStr = User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
             if (string.IsNullOrEmpty(userIdStr)) return Unauthorized();
             int userId = int.Parse(userIdStr);
 
-            var service = await _context.Services.FindAsync(serviceId);
-            if (service == null) return NotFound();
+            Service? service = null;
+            if (serviceId.HasValue && serviceId.Value > 0)
+            {
+                service = await _context.Services.FindAsync(serviceId.Value);
+            }
+
+            if (service == null)
+            {
+                service = await _context.Services.FirstOrDefaultAsync();
+            }
+
+            if (service == null) return NotFound("No services available.");
 
             var userVehicles = await _context.Vehicles
                 .Where(v => v.UserId == userId)

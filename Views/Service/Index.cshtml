@@ -1,0 +1,82 @@
+@model IEnumerable<AutoSphere.Models.Service>
+@{
+    ViewData["Title"] = "Our Precision Services";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h6 class="text-secondary text-uppercase fw-bold letter-spacing-2">Certified Excellence</h6>
+        <h1 class="display-5 fw-bold text-white mb-3">Engineered Automotive Services</h1>
+        <p class="text-muted mx-auto" style="max-width: 650px;">From algorithmic diagnostic scans to full performance overhauls, our factory-calibrated service menu delivers peace of mind.</p>
+        
+        <!-- Search bar -->
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6 col-lg-5">
+                <form asp-controller="Service" asp-action="Index" method="get" class="d-flex gap-2">
+                    <input type="text" name="searchKeyword" class="form-control bg-dark text-white border-secondary rounded-pill px-4" placeholder="Search service (e.g. Brake, Oil, Diagnostics)..." value="@Context.Request.Query["searchKeyword"]" />
+                    <button type="submit" class="btn btn-secondary-custom rounded-pill px-4">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="glass-card p-5 text-center my-4">
+            <i class="fas fa-tools text-muted fa-3x mb-3"></i>
+            <h4 class="text-white">No services found</h4>
+            <p class="text-muted">Try a different search term or view our full menu.</p>
+            <a asp-action="Index" class="btn btn-outline-custom mt-2">Reset Filter</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var s in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="glass-card h-100 d-flex flex-column p-4 transition-hover border border-secondary border-opacity-10 position-relative overflow-hidden">
+                        @if (s.IsDoorstepAvailable)
+                        {
+                            <span class="badge bg-secondary position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill small">
+                                <i class="fas fa-truck-pickup me-1"></i> Doorstep Available
+                            </span>
+                        }
+                        
+                        <div class="d-inline-flex p-3 rounded-4 bg-primary bg-opacity-10 text-primary mb-3" style="width: fit-content;">
+                            <i class="fas fa-wrench fa-2x"></i>
+                        </div>
+
+                        <h4 class="fw-bold text-white mb-2">@s.Name</h4>
+                        <p class="text-muted small flex-grow-1">@s.Description</p>
+
+                        @if (!string.IsNullOrEmpty(s.IncludedFeatures))
+                        {
+                            <div class="my-3 py-2 border-top border-bottom border-secondary border-opacity-10">
+                                <small class="text-muted text-uppercase fw-bold d-block mb-2" style="font-size: 0.75rem;">Highlights</small>
+                                <ul class="list-unstyled mb-0 small text-white-50">
+                                    @foreach (var feat in s.IncludedFeatures.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                                    {
+                                        <li class="mb-1"><i class="fas fa-check text-secondary me-2 small"></i> @feat.Trim()</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        <div class="d-flex align-items-center justify-content-between mt-auto pt-3 border-top border-secondary border-opacity-10">
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">Starting At</small>
+                                <span class="fs-4 fw-bold text-white">₹@s.Price.ToString("N0")</span>
+                            </div>
+                            <a asp-controller="Booking" asp-action="Book" asp-route-serviceId="@s.Id" class="btn btn-primary-custom py-2 px-4 rounded-pill">
+                                Book Now <i class="fas fa-chevron-right ms-1 small"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
